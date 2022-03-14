@@ -29,10 +29,10 @@ module.exports = {
 					name: "The Verifryer"
 				},
 				title: "Verifry your FRIES!",
-				description: "Click the button below to verify your FRIES holdings!",
 				thumbnail: {
 					url: "https://fries.fund/friesdao-square.png",
-				}
+				},
+				color: 0xE36911
 			}],
 			components: [row]
 		})
@@ -45,12 +45,12 @@ module.exports = {
 			const replyRow = new MessageActionRow()
 			.addComponents(
 				new MessageButton()
-					.setLabel("Connect wallet")
+					.setLabel("Connect Wallet")
 					.setStyle('LINK')
 					.setURL(`https://verifry.fries.fund/?id=${aes256.encrypt(process.env.KEY, i.user.id)}`),
 			);
 
-			i.reply({content: "Click below to connect your wallet (do not share this link)", ephemeral: true, components: [replyRow] })
+			i.reply({content: "Click the link below to connect your wallet! (do not share this link)", ephemeral: true, components: [replyRow] })
 		})
 
         interaction.reply({ content: `Created verifier button in channel: ${channel}`, ephemeral: true })

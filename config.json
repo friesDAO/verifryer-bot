@@ -1,4 +1,9 @@
 {
-	"clientId": "951602800847106068",
-	"guildId": "925538083858960424"
+	"guildId": "925538083858960424",
+	"adminId": "925538161046736896",
+	"cutoff": 5000,
+	"role": "946534576384266270",
+	"tokenAddress": "0xFA57F00D948bb6a28072f5416fCbF7836C3d62dD",
+	"stakingPoolAddress": "0x8499d57fb9ae9e3d19cf2d717de514f570850a34",
+	"provider": "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
 }
