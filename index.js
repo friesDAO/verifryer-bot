@@ -178,6 +178,7 @@ function startUpdating() {
 	}
 
 	async function handleUpdate(update) {
+		console.log(update.action)
 		if (update.action === "add") {
 			const user = (await faunaClient.query(
 				q.Get(update.document.ref)
