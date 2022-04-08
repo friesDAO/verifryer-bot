@@ -47,7 +47,7 @@ module.exports = {
 				new MessageButton()
 					.setLabel("Connect Wallet")
 					.setStyle('LINK')
-					.setURL(`https://verifry.fries.fund/?id=${aes256.encrypt(process.env.KEY, i.user.id)}`),
+					.setURL(`https://verifry.fries.fund/?id=${encodeURIComponent(aes256.encrypt(process.env.KEY, i.user.id))}`),
 			);
 
 			i.reply({content: "Click the link below to connect your wallet! (do not share this link)", ephemeral: true, components: [replyRow] })
