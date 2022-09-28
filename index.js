@@ -18,6 +18,7 @@ const q = faunadb.query
 const { ethers } = require("ethers")
 const ERC20ABI = require("./abis/ERC20.json")
 const StakingPoolABI = require("./abis/FriesDAOStakingPool.json");
+const NFTABI = require("./abis/FriesDAONFT.json")
 const BN = n => ethers.BigNumber.from(n)
 
 require('dotenv').config()
@@ -51,7 +52,7 @@ client.once('ready', async () => {
     // Registering the commands in the client
     const CLIENT_ID = client.user.id;
     const rest = new REST({
-        version: '9'
+        version: '10'
     }).setToken(process.env.TOKEN);
 
 	startUpdating()
@@ -67,20 +68,26 @@ client.once('ready', async () => {
 		if (error) console.error(error);
 	}
 
-	const permissions = [
-		{
-			id: config.adminId,
-			type: 'ROLE',
-			permission: true,
-		}
-	];
+	// const permissions = [
+	// 	{
+	// 		id: client.guilds.cache.get(config.guildId).roles.everyone.id,
+	// 		type: "ROLE",
+	// 		permission: false
+	// 	},
+	// 	{
+	// 		id: config.adminId,
+	// 		type: 'ROLE',
+	// 		permission: true,
+	// 	}
+	// ];
 
-	const guildCommands = await client.guilds.cache.get(config.guildId)?.commands.fetch();
+	// const guildCommands = await client.guilds.cache.get(config.guildId)?.commands.fetch();
 
-	guildCommands.forEach((guildCommand) => {
-		guildCommand.setDefaultPermission(false)
-		guildCommand.permissions.add({ permissions })
-	})
+	// guildCommands.forEach((guildCommand) => {
+	// 	// guildCommand.setDefaultPermission(false)
+	// 	client.application.commands.permissions.set({ command: guildCommand.id, permissions: permissions })
+		
+	// })
 });
 
 client.on('interactionCreate', async interaction => {
@@ -103,6 +110,7 @@ const faunaClient = new faunadb.Client({
 const provider = new ethers.providers.JsonRpcProvider(config.provider)
 const Token = new ethers.Contract(config.tokenAddress, ERC20ABI, provider)
 const StakingPool = new ethers.Contract(config.stakingPoolAddress, StakingPoolABI, provider)
+const NFT = new ethers.Contract(config.nftAddress, NFTABI, provider) 
 
 async function updateAllUsers() {
 	let query = (await faunaClient.query(
@@ -139,27 +147,38 @@ async function updateAllUsers() {
 	}
 }
 
-function updateUser(user, member, hasRole) {
-	Promise.all([
+async function checkVerified(user) {
+	const [
+		friesBalance,
+		friesStaked,
+		nftBalance
+	] = await Promise.all([
 		Token.balanceOf(user.address),
-		StakingPool.userInfo(0, user.address)
-	]).then(res => {
-		const [ balance, staked ] = res
-		if (parse(balance) + parse(staked[0]) >= 5000) {
-			if (!hasRole) {
-				member.roles.add(config.role)
-			}
-		} else {
-			if (hasRole) {
-				member.roles.remove(config.role)
-			}
+		StakingPool.userInfo(0, user.address),
+		NFT.balanceOf(user.address)
+	])
+
+	return parse(friesBalance) + parse(friesStaked[0]) >= 5000 || nftBalance > 0
+}
+
+async function updateUser(user, member, hasRole) {
+	const verified = await checkVerified(user)
+	if (verified) {
+		if (!hasRole) {
+			member.roles.add(config.role)
+			// console.log(`added role to ${member.user.username}`)
 		}
-	})
+	} else {
+		if (hasRole) {
+			member.roles.remove(config.role)
+			// console.log(`removed role from ${member.user.username}`)
+		}
+	}
 }
 
 function startUpdating() {
 	updateAllUsers()
-	setTimeout(updateAllUsers, 10 * 60 * 60 * 1000)
+	setInterval(updateAllUsers, 4 * 60 * 60 * 1000)
 
 	const setRef = q.Documents(q.Collection("discord-wallet-signatures"))
 

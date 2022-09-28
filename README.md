@@ -1,2 +1,2 @@
 # verifryer-bot
-verifries your FRIES holdings for the friesDAO discord server
+verifries your FRIES / NFT holdings for the friesDAO discord server
